@@ -1,0 +1,53 @@
+{
+    "nodegroup": {
+        "nodegroupName": "sara-portfolio-cluster-nodes",
+        "nodegroupArn": "arn:aws:eks:ap-south-1:980921758549:nodegroup/sara-portfolio-cluster/sara-portfolio-cluster-nodes/1ecb9059-2c6f-bfce-c4d6-3db116dd9be1",
+        "clusterName": "sara-portfolio-cluster",
+        "version": "1.32",
+        "releaseVersion": "1.32.3-20250519",
+        "createdAt": "2025-05-30T13:17:31.541000+03:00",
+        "modifiedAt": "2025-05-30T13:38:10.113000+03:00",
+        "status": "DELETING",
+        "capacityType": "ON_DEMAND",
+        "scalingConfig": {
+            "minSize": 2,
+            "maxSize": 3,
+            "desiredSize": 2
+        },
+        "instanceTypes": [
+            "t3a.large"
+        ],
+        "subnets": [
+            "subnet-0387fdd540fd17801",
+            "subnet-0abcabc1e5fa0d520"
+        ],
+        "amiType": "AL2023_x86_64_STANDARD",
+        "nodeRole": "arn:aws:iam::980921758549:role/sara-portfolio-cluster-node-group-role",
+        "resources": {
+            "autoScalingGroups": [
+                {
+                    "name": "eks-sara-portfolio-cluster-nodes-1ecb9059-2c6f-bfce-c4d6-3db116dd9be1"
+                }
+            ]
+        },
+        "diskSize": 20,
+        "health": {
+            "issues": [
+                {
+                    "code": "AccessDenied",
+                    "message": "Amazon EKS is unable to communicate with your cluster, and can no longer manage your worker nodes."
+                }
+            ]
+        },
+        "updateConfig": {
+            "maxUnavailable": 1
+        },
+        "tags": {
+            "owner": "Sara.Golombeck",
+            "kubernetes.io/cluster/sara-portfolio-cluster": "owned",
+            "expiration_date": "01-07-2025",
+            "Bootcamp": "BC24",
+            "Name": "sara-portfolio-cluster-node-group"
+        }
+    }
+}
