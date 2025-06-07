@@ -1,19 +1,16 @@
 # modules/eks/main.tf
 
-# ============================================
 # EKS CLUSTER SECURITY GROUP
-# ============================================
-
 resource "aws_security_group" "cluster" {
   name_prefix = "${var.cluster_name}-cluster-sg"
   vpc_id      = var.vpc_id
 
   ingress {
-    description = "HTTPS"
+    description = "HTTPS from private subnets"
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = ["10.0.0.0/16"]
+    cidr_blocks = var.private_subnet_cidrs
   }
 
   egress {
@@ -28,21 +25,21 @@ resource "aws_security_group" "cluster" {
   })
 }
 
-# ============================================
 # EKS CLUSTER
-# ============================================
-
 resource "aws_eks_cluster" "main" {
   name     = var.cluster_name
   role_arn = aws_iam_role.cluster.arn
   version  = var.cluster_version
 
   vpc_config {
-    subnet_ids              = var.control_plane_subnet_ids
+    subnet_ids = [
+      var.private_subnet[0].id,
+      var.private_subnet[1].id
+    ]
     security_group_ids      = [aws_security_group.cluster.id]
     endpoint_private_access = true
     endpoint_public_access  = true
-    public_access_cidrs    = ["0.0.0.0/0"]
+    public_access_cidrs    = var.public_access_cidrs
   }
 
   # API Access Entry Configuration
@@ -58,15 +55,17 @@ resource "aws_eks_cluster" "main" {
   tags = var.common_tags
 }
 
-# ============================================
-# EKS NODE GROUP
-# ============================================
 
+# EKS NODE GROUP
 resource "aws_eks_node_group" "main" {
   cluster_name    = aws_eks_cluster.main.name
   node_group_name = "${var.cluster_name}-nodes"
   node_role_arn   = aws_iam_role.node_group.arn
-  subnet_ids      = var.worker_subnet_ids
+  
+  subnet_ids = [
+    var.private_subnet[0].id,
+    var.private_subnet[1].id
+  ]
 
   capacity_type  = var.node_group_config.capacity_type
   instance_types = var.node_group_config.instance_types
@@ -93,6 +92,7 @@ resource "aws_eks_node_group" "main" {
     aws_iam_role_policy_attachment.node_group_AmazonEC2ContainerRegistryReadOnly,
   ]
 }
+
 resource "kubernetes_storage_class" "gp3_default" {
   metadata {
     name = "gp3"

@@ -17,7 +17,7 @@ terraform {
   }
   
   backend "s3" {
-    bucket         = "sara-portfolio-terraform-state"
+    bucket         = "sara-portfolio-terraform-state-1"
     key            = "prod/terraform.tfstate"
     region         = "ap-south-1"
     dynamodb_table = "terraform-state-lock"
