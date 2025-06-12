@@ -1,29 +1,3 @@
-# modules/eks/main.tf
-
-# EKS CLUSTER SECURITY GROUP
-resource "aws_security_group" "cluster" {
-  name_prefix = "${var.cluster_name}-cluster-sg"
-  vpc_id      = var.vpc_id
-
-  ingress {
-    description = "HTTPS from private subnets"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = var.private_subnet_cidrs
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = merge(var.common_tags, {
-    Name = "${var.cluster_name}-cluster-sg"
-  })
-}
 
 # EKS CLUSTER
 resource "aws_eks_cluster" "main" {
@@ -32,11 +6,7 @@ resource "aws_eks_cluster" "main" {
   version  = var.cluster_version
 
   vpc_config {
-    subnet_ids = [
-      var.private_subnet[0].id,
-      var.private_subnet[1].id
-    ]
-    security_group_ids      = [aws_security_group.cluster.id]
+    subnet_ids = var.private_subnet[*].id
     endpoint_private_access = true
     endpoint_public_access  = true
     public_access_cidrs    = var.public_access_cidrs
@@ -62,11 +32,7 @@ resource "aws_eks_node_group" "main" {
   node_group_name = "${var.cluster_name}-nodes"
   node_role_arn   = aws_iam_role.node_group.arn
   
-  subnet_ids = [
-    var.private_subnet[0].id,
-    var.private_subnet[1].id
-  ]
-
+  subnet_ids = var.private_subnet[*].id
   capacity_type  = var.node_group_config.capacity_type
   instance_types = var.node_group_config.instance_types
   disk_size      = var.node_group_config.disk_size

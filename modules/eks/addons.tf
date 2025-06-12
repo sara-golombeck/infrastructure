@@ -59,9 +59,7 @@ resource "aws_eks_addon" "addons" {
   for_each     = var.cluster_addons  
   cluster_name = aws_eks_cluster.main.name
   addon_name   = each.key
-  
   depends_on = [aws_eks_node_group.main]
-  
   tags = var.common_tags
 }
 
@@ -79,8 +77,8 @@ resource "aws_iam_role" "external_secrets" {
         }
         Condition = {
           StringEquals = {
-            "${replace(aws_eks_cluster.main.identity[0].oidc[0].issuer, "https://", "")}:sub" = "system:serviceaccount:external-secrets:external-secrets"
-            "${replace(aws_eks_cluster.main.identity[0].oidc[0].issuer, "https://", "")}:aud" = "sts.amazonaws.com"
+            "${replace(aws_iam_openid_connect_provider.eks_oidc.url, "https://", "")}:sub" = "system:serviceaccount:external-secrets:external-secrets"
+            "${replace(aws_iam_openid_connect_provider.eks_oidc.url, "https://", "")}:aud" = "sts.amazonaws.com"
           }
         }
       }
@@ -117,17 +115,57 @@ resource "aws_iam_role_policy_attachment" "external_secrets_policy" {
   role       = aws_iam_role.external_secrets.name
 }
 
-resource "kubernetes_service_account" "external_secrets" {
-  metadata {
-    name      = "external-secrets"
-    namespace = "external-secrets"
-    annotations = {
-      "eks.amazonaws.com/role-arn" = aws_iam_role.external_secrets.arn
-    }
-  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# resource "kubernetes_service_account" "external_secrets" {
+#   metadata {
+#     name      = "external-secrets"
+#     namespace = "external-secrets"
+#     annotations = {
+#       "eks.amazonaws.com/role-arn" = aws_iam_role.external_secrets.arn
+#     }
+#   }
   
-  depends_on = [
-    aws_iam_role.external_secrets,
-    aws_eks_cluster.main
-  ]
-}
+#   depends_on = [
+#     aws_iam_role.external_secrets,
+#     aws_eks_cluster.main
+#   ]
+# }

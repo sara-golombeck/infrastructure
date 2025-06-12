@@ -1,4 +1,4 @@
-# modules/network/main.tf
+data "aws_region" "current" {}
 
 resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr
@@ -48,25 +48,33 @@ resource "aws_subnet" "private" {
   })
 }
 
+# S3 Gateway Endpoint
+resource "aws_vpc_endpoint" "s3" {
+  vpc_id       = aws_vpc.main.id
+  service_name = "com.amazonaws.${data.aws_region.current.name}.s3"
+  route_table_ids = [aws_route_table.private.id]
+    
+  tags = merge(var.common_tags, {
+    Name = "${var.vpc_name}-s3-endpoint"
+  })
+}
+
 resource "aws_eip" "nat" {
-  count  = length(var.public_subnet_cidrs)
   domain = "vpc"
 
   depends_on = [aws_internet_gateway.main]
 
   tags = merge(var.common_tags, {
-    Name = "${var.vpc_name}-nat-eip-${count.index + 1}"
+    Name = "${var.vpc_name}-nat-eip"
   })
 }
 
 resource "aws_nat_gateway" "main" {
-  count = length(var.public_subnet_cidrs)
-
-  allocation_id = aws_eip.nat[count.index].id
-  subnet_id     = aws_subnet.public[count.index].id
+  allocation_id = aws_eip.nat.id
+  subnet_id     = aws_subnet.public[0].id
 
   tags = merge(var.common_tags, {
-    Name = "${var.vpc_name}-nat-gw-${count.index + 1}"
+    Name = "${var.vpc_name}-nat-gw"
   })
 
   depends_on = [aws_internet_gateway.main]
@@ -76,7 +84,7 @@ resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
 
   route {
-    cidr_block = "0.0.0.0/0"
+    cidr_block = var.default_route_cidr
     gateway_id = aws_internet_gateway.main.id
   }
 
@@ -86,17 +94,15 @@ resource "aws_route_table" "public" {
 }
 
 resource "aws_route_table" "private" {
-  count = length(var.private_subnet_cidrs)
-
   vpc_id = aws_vpc.main.id
 
   route {
-    cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.main[count.index].id
+    cidr_block     = var.default_route_cidr
+    nat_gateway_id = aws_nat_gateway.main.id
   }
 
   tags = merge(var.common_tags, {
-    Name = "${var.vpc_name}-private-rt-${count.index + 1}"
+    Name = "${var.vpc_name}-private-rt"
   })
 }
 
@@ -111,5 +117,5 @@ resource "aws_route_table_association" "private" {
   count = length(aws_subnet.private)
 
   subnet_id      = aws_subnet.private[count.index].id
-  route_table_id = aws_route_table.private[count.index].id
+  route_table_id = aws_route_table.private.id
 }

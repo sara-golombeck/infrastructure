@@ -34,3 +34,8 @@ variable "common_tags" {
   type        = map(string)
   default     = {}
 }
+variable "default_route_cidr" {
+  description = "CIDR block for default route (0.0.0.0/0 for internet access)"
+  type        = string
+  default     = "0.0.0.0/0"
+}

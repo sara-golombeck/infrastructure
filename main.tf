@@ -26,9 +26,8 @@ module "eks" {
   private_subnet      = module.vpc.private_subnet
   private_subnet_cidrs = module.vpc.private_subnet_cidrs
   
-  public_access_cidrs = ["0.0.0.0/0"]
-  
-  admin_user_arn      = "arn:aws:iam::980921758549:user/Sara.Golombeck"
+  public_access_cidrs = var.public_access_cidrs
+  admin_user_arn      = var.admin_user_arn
   
   node_group_config   = var.node_group_config
   cluster_addons      = var.cluster_addons
